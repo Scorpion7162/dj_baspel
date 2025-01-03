@@ -1,17 +1,17 @@
 Config = {}
 
 --- Common settings ---
-Config.Debug = true -- If you want debug in console
+Config.Debug = false -- If you want debug in console
 Config.DefaultVolume = 0.1 -- Accepted values are 0.01 - 1
 Config.Distance = 5.0 -- Dont touch this
 
 --- Target system ---
-Config.ox_target = false -- If you want to use qtarget you need also polyzone script
+Config.ox_target = true -- If you want to use qtarget you need also polyzone script
 
 --- Locations ---
 Config.Locations = {
     {
-        onlyJob = true, -- If false then everyone can access the location
+        onlyJob = false, -- If false then everyone can access the location
         job = 'vanilla', -- if onJob true, you have to write the name of that job here like 'vanilla'
         name = 'Vanilla', -- Name of zone
         coords = vec3(120.5638, -1280.9021, 29.4805), -- Coordinates where menu will appear if you are nearby
@@ -20,28 +20,10 @@ Config.Locations = {
         isPlaying = false -- Dont touch this!!!!
     },
     {
-        onlyJob = false,
-        job = 'nil',
-        name = 'Bahama',
-        coords = vec3(-1382.05, -614.72, 31.5),
-        radius = 30,
-        distance = 2.5,
-        isPlaying = false
-    },
-    {
-        onlyJob = false,
-        job = 'nil',
-        name = 'Galaxy',
-        coords = vec3(376.19, 275.45, 92.39),
-        radius = 30,
-        distance = 2.5,
-        isPlaying = false
-    },
-    {
-        onlyJob = false,
-        job = 'nil',
-        name = 'Tequila',
-        coords = vec3(-562.11, 281.66, 85.6764),
+        onlyJob = true,
+        job = 'bahama',
+        name = 'bahama',
+        coords = vec3(-1377.96, -606.61, 31.22),
         radius = 30,
         distance = 2.5,
         isPlaying = false
@@ -50,7 +32,7 @@ Config.Locations = {
 
 Config.Language = {
     ['openMenu'] = '[E] - Open a DJ Menu',
-    ['titleMenu'] = '💿 | DJ Pult',
+    ['titleMenu'] = '💿 | Forever Together',
     ['playSong'] = '🎶 | Play a song',
     ['playSongDesc'] = 'Enter a youtube URL',
     ['pauseMusic'] = '⏸️ | Pause Music',
@@ -67,7 +49,7 @@ Config.Language = {
     ['musicVolumeNm'] = 'Min: 0.01 - Max: 1', -- Pls dont change numbers (0.01 - 1)
 
     --- Playlist ---
-    ['playlistMenu'] = '🎶 | DJ Pult Playlist',
+    ['playlistMenu'] = '🎶 | Playlist',
     ['playlistDesc'] = 'Play a song from playlist',
     ['playlistMenuTitle'] = '🎶 | Play a song'
 }
