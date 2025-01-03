@@ -13,7 +13,6 @@
 - You can add as many spots as you want
 - You can change radius
 - Music Server synced through xsound
-- Currently supporting ESX
 - Everything is easily configurable
 - Can be modified
 - Supports ox_target (optional)
@@ -22,3 +21,5 @@
 # Preview
 - https://youtu.be/2jjH-G78fJw
 - For more work: https://discord.gg/PpAHBCMW97 
+
+- Note: Baspel did a lot of the work for this, I only changed it to work with QB-Core. The job sync works and everything. Original credits go to him 🙏
