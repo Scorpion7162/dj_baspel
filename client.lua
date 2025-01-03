@@ -1,124 +1,224 @@
+-----------------------------------------------------------------------------------
+local LastZone, CurrentAction, hasAlreadyEnteredMarker, job = nil, nil, false, nil
+local xSound = exports.xsound
+local ox_target = exports.ox_target
 local QBCore = exports['qb-core']:GetCoreObject()
-local currentZone = nil
-local PlayerData = {}
-local lib = nil
-print('ox_lib loaded:', lib ~= nil)
+local PlayerData = QBCore.Functions.GetPlayerData()
+-----------------------------------------------------------------------------------
+-- NET EVENTS -- SCORP ---
 
--- Handlers
 
-AddEventHandler('onResourceStart', function(resourceName)
-    if (GetCurrentResourceName() ~= resourceName) then return end
+RegisterNetEvent('QBCore:Client:OnPlayerLoaded', function()
     PlayerData = QBCore.Functions.GetPlayerData()
 end)
-
-AddEventHandler('QBCore:Client:OnPlayerLoaded', function()
-    PlayerData = QBCore.Functions.GetPlayerData()
-end)
-
+-- 
 RegisterNetEvent('QBCore:Client:OnJobUpdate', function(JobInfo)
     PlayerData.job = JobInfo
 end)
-
+--
 RegisterNetEvent('QBCore:Client:OnPlayerUnload', function()
     PlayerData = {}
 end)
+--
 
--- Main Menu
-
-function createMusicMenu()
-    return {
-        {
-            title = '💿 | DJ Booth',
-            isHeader = true
-        },
-        {
-            title = '🎶 | Play a song',
-            description = 'Enter a YouTube URL',
-            onSelect = function()
-                local input = lib.inputDialog('Song Selection', {
-                    {type = 'input', label = 'YouTube URL', required = true}
-                })
-                if input then
-                    TriggerServerEvent('qb-djbooth:server:playMusic', input[1], currentZone)
-                end
-            end
-        },
-        {
-            title = '⏸️ | Pause Music',
-            description = 'Pause currently playing music',
-            serverEvent = 'qb-djbooth:server:pauseMusic',
-            args = {zoneName = currentZone}
-        },
-        {
-            title = '▶️ | Resume Music',
-            description = 'Resume playing paused music',
-            serverEvent = 'qb-djbooth:server:resumeMusic',
-            args = {zoneName = currentZone}
-        },
-        {
-            title = '🔈 | Change Volume',
-            description = 'Set music volume',
-            onSelect = function()
-                local input = lib.inputDialog('Music Volume', {
-                    {type = 'input', label = 'Min: 0.01 - Max: 1', required = true}
-                })
-                if input then
-                    TriggerServerEvent('qb-djbooth:server:changeVolume', tonumber(input[1]), currentZone)
-                end
-            end
-        },
-        {
-            title = '❌ | Turn off music',
-            description = 'Stop the music & choose a new song',
-            serverEvent = 'qb-djbooth:server:stopMusic',
-            args = {zoneName = currentZone}
-        }
-    }
-end
-
--- DJ Booths
-
-local vanilla = BoxZone:Create(Config.Locations['bahama'].coords, 1, 1, {
-    name = "Bahama",
-    heading = 0
-})
-
-vanilla:onPlayerInOut(function(isPointInside)
-    if isPointInside and PlayerData.job.name == Config.Locations['bahama'].job then
-        currentZone = 'bahama'
-        lib.showContext('musicHeader')
-    else
-        currentZone = nil
-        lib.hideContext()
-    end
-end)
-
--- Events
-
-RegisterNetEvent('qb-djbooth:client:playMusic', function()
-    local musicMenu = createMusicMenu()
+RegisterNetEvent('dj_baspel:createMusicMenu', function()
     lib.registerContext({
-        id = 'musicMenu',
-        title = 'DJ Booth',
-        options = musicMenu
+        id = 'music_menu',
+        title = Config.Language['titleMenu'],
+        options = {
+            {
+                title = Config.Language['playSong'],
+                description = Config.Language['playSongDesc'],
+                arrow = false,
+                event = 'dj_baspel:playMusicMenu',
+            },
+                                {
+                title = Config.Language['playlistMenu'],
+                description = Config.Language['playlistDesc'],
+                arrow = true,
+                menu = 'playlist_menu',
+            },
+            {
+                title = Config.Language['pauseMusic'],
+                description = Config.Language['pauseMusicDesc'],
+                arrow = false,
+                serverEvent = 'dj_baspel:pauseMusic',
+            },
+            {
+                title = Config.Language['resumeMusic'],
+                description = Config.Language['resumeMusicDesc'],
+                arrow = false,
+                serverEvent = 'dj_baspel:resumeMusic',
+            },
+            {
+                title = Config.Language['changeVolume'],
+                description = Config.Language['changeVolumeDesc'],
+                arrow = false,
+                event = 'dj_baspel:changeVolumeMenu',
+            },
+            {
+                title = Config.Language['stopMusic'],
+                description = Config.Language['stopMusicDesc'],
+                arrow = false,
+                serverEvent = 'dj_baspel:stopMusic',
+            },
+        },
+        {
+            id = 'playlist_menu',
+            title = Config.Language['playlistMenuTitle'],
+            options = {
+                {
+                    title = Config.Playlist['first'],
+                    description = Config.Playlist['desc_first'],
+                    args = {music = Config.Playlist['music_first_id']},
+                    event = 'dj_baspel:playMusicFromPlaylist'
+                },
+                {
+                    title = Config.Playlist['second'],
+                    description = Config.Playlist['desc_second'],
+                    args = {music = Config.Playlist['music_second_id']},
+                    event = 'dj_baspel:playMusicFromPlaylist'
+                },
+                {
+                    title = Config.Playlist['third'],
+                    description = Config.Playlist['desc_third'],
+                    args = {music = Config.Playlist['music_third_id']},
+                    event = 'dj_baspel:playMusicFromPlaylist'
+                },
+                {
+                    title = Config.Playlist['fourth'],
+                    description = Config.Playlist['desc_fourth'],
+                    args = {music = Config.Playlist['music_fourth_id']},
+                    event = 'dj_baspel:playMusicFromPlaylist'
+                },
+                {
+                    title = Config.Playlist['fifth'],
+                    description = Config.Playlist['desc_fifth'],
+                    args = {music = Config.Playlist['music_fifth_id']},
+                    event = 'dj_baspel:playMusicFromPlaylist'
+                }
+            }
+        }
     })
-    lib.showContext('musicMenu')
+    lib.showContext('music_menu')
 end)
 
-RegisterNetEvent('qb-djbooth:client:musicMenu', function()
-    local input = lib.inputDialog('Song Selection', {
-        {type = 'input', label = 'YouTube URL', required = true}
-    })
+RegisterNetEvent('dj_baspel:playMusicFromPlaylist', function (data)
+    local input = data.music
     if input then
-        TriggerServerEvent('qb-djbooth:server:playMusic', input[1], currentZone)
+        TriggerServerEvent('dj_baspel:playMusic', input)
     end
 end)
 
-RegisterNetEvent('qb-djbooth:client:changeVolume', function()
-    local input = lib.inputDialog('Music Volume', {
-        {type = 'input', label = 'Min: 0.01 - Max: 1', required = true}
-    })
+RegisterNetEvent('dj_baspel:playMusicMenu', function (YoutubeURL)
+    local input = lib.inputDialog(Config.Language['songSel'], {Config.Language['url']})
     if input then
-        TriggerServerEvent('qb-djbooth:server:changeVolume', tonumber(input[1]), currentZone)
+        local YoutubeURL = input[1]
+        TriggerServerEvent('dj_baspel:playMusic', YoutubeURL)
     end
 end)
+
+RegisterNetEvent('dj_baspel:changeVolumeMenu', function ()
+    local input = lib.inputDialog(Config.Language['musicVolume'], {Config.Language['musicVolumeNm']})
+    if input then
+        local volume = input[1]
+        TriggerServerEvent('dj_baspel:changeVolume', volume)
+    end
+end)
+
+CreateThread(function()
+    if not Config.ox_target then
+        while true do
+            local sleep = 1500
+            local playerCoords, inLocation, currentZone = GetEntityCoords(PlayerPedId()), false, false
+
+            for i=1, #Config.Locations do
+                local dist = #(playerCoords - Config.Locations[i].coords)
+                if dist <= Config.Distance then
+                    sleep = 0
+                    if dist <= Config.Locations[i].distance and Config.Locations[i].onlyJob then
+                        inLocation, currentZone, job = true, i, Config.Locations[i].job
+                    elseif dist <= Config.Locations[i].distance and not Config.Locations[i].onlyJob then
+                        inLocation, currentZone, job = true, i, nil
+                    end
+                end
+            end
+
+            if (inLocation and not hasAlreadyEnteredMarker and ESX.PlayerData.job.name == job) or (inLocation and LastZone ~= currentZone and ESX.PlayerData.job.name == job) then
+                hasAlreadyEnteredMarker, LastZone = true, currentZone
+                CurrentAction = 'musicMenu'
+                lib.showTextUI(Config.Language['openMenu'])
+            elseif (inLocation and not hasAlreadyEnteredMarker and job == nil) or (inLocation and LastZone ~= currentZone and job == nil) then
+                hasAlreadyEnteredMarker, LastZone = true, currentZone
+                CurrentAction = 'musicMenu'
+                lib.showTextUI(Config.Language['openMenu'])
+            end
+
+            if not inLocation and hasAlreadyEnteredMarker then
+                hasAlreadyEnteredMarker = false
+                sleep = 1000
+                CurrentAction = nil
+                lib.hideTextUI()
+            end
+            Wait(sleep)
+        end
+    else
+        for k, v in pairs(Config.Locations) do
+            if v.onlyJob then
+                ox_target:addSphereZone({
+                    coords = v.coords,
+                    radius = 1,
+                    debug = drawZones,
+                    options = {
+                        {
+                            name = 'sphere:dj',
+                            event = 'dj_baspel:createMusicMenu',
+                            icon = 'fa fa-music',
+                            label = 'DJ Deck',
+                            canInteract = function(entity, distance, coords, name)
+                                if v.onlyJob and PlayerData.job.name == v.job then
+                                    return true
+                                end
+                            end
+                        }
+                    }
+                })
+            elseif not v.onlyJob then
+                ox_target:addSphereZone({
+                    coords = v.coords,
+                    radius = 1,
+                    debug = drawZones,
+                    options = {
+                        {
+                            name = 'sphere:dj',
+                            event = 'dj_baspel:createMusicMenu',
+                            icon = 'fa fa-music',
+                            label = 'DJ Deck',
+                            canInteract = function(entity, distance, coords, name)
+                                return true
+                            end
+                        }
+                    }
+                })
+            end
+        end
+    end
+end)
+
+if not Config.ox_target then
+    CreateThread(function ()
+        while true do
+            local sleep = 1500
+            if CurrentAction ~= nil then
+                sleep = 0
+                if IsControlPressed(1, 38) then
+                    Wait(500)
+                    if CurrentAction == 'musicMenu' then
+                        TriggerEvent('dj_baspel:createMusicMenu')
+                    end
+                end
+            end
+            Wait(sleep)
+        end
+    end)
+end
